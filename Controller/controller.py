@@ -70,13 +70,19 @@ class OrderController(Resource):
         return order_dataclass
 
     def get(self, order_id: int):
-        order_data = order_bl.get(order_id)
+        try:
+            order_data = order_bl.get(order_id)
+        except Exception as err:
+            return ("Error", str(err)), 400
         order_schema = OrderSchema()
         json_order = order_schema.dump(obj=order_data)
         return json_order, 200
 
     def delete(self, order_id: int):
-        deleted_order = order_bl.delete(order_id)
+        try:
+            deleted_order = order_bl.delete(order_id)
+        except Exception as err:
+            return ("Error", str(err)), 400
         order_schema = OrderSchema()
         json_order = order_schema.dump(obj=deleted_order)
         return json_order, 200
@@ -89,7 +95,11 @@ class OrderController(Resource):
         except ValidationError as err:
             return ("Error", err.messages), 422
         order_dataclass = OrderController.map_json_dataclass(validated_data)
-        created_order = order_bl.create(order_dataclass)
+
+        try:
+            created_order = order_bl.create(order_dataclass)
+        except Exception as err:
+            return ("Error", str(err)), 400
         json_order = order_schema.dump(obj=created_order)
         return json_order, 201
 
@@ -101,7 +111,10 @@ class OrderController(Resource):
         except ValidationError as err:
             return ("Error", err.messages), 422
         order_dataclass = OrderController.map_json_dataclass(validated_data)
-        updated_order = order_bl.update(order_dataclass)
+        try:
+            updated_order = order_bl.update(order_dataclass)
+        except Exception as err:
+            return ("Error", str(err)), 400
         json_order = order_schema.dump(obj=updated_order)
         return json_order, 201
 
@@ -119,13 +132,19 @@ class GoodController(Resource):
         return good_dataclass
 
     def get(self, good_id: int):
-        good_data = good_bl.get(good_id)
+        try:
+            good_data = good_bl.get(good_id)
+        except Exception as err:
+            return ("Error", str(err)), 400
         good_schema = GoodSchema()
         json_order = good_schema.dump(obj=good_data)
         return json_order, 200
 
     def delete(self, good_id: int):
-        deleted_good = good_bl.delete(good_id)
+        try:
+            deleted_good = good_bl.delete(good_id)
+        except Exception as err:
+            return ("Error", str(err)), 400
         good_schema = GoodSchema()
         json_order = good_schema.dump(obj=deleted_good)
         return json_order, 200
@@ -138,7 +157,10 @@ class GoodController(Resource):
         except ValidationError as err:
             return ("Error", err.messages), 422
         good_dataclass = GoodController.map_json_dataclass(validated_data)
-        created_good = good_bl.create(good_dataclass)
+        try:
+            created_good = good_bl.create(good_dataclass)
+        except Exception as err:
+            return ("Error", str(err)), 400
         json_good = good_schema.dump(obj=created_good)
         return json_good, 201
 
@@ -150,7 +172,10 @@ class GoodController(Resource):
         except ValidationError as err:
             return ("Error", err.messages), 422
         good_dataclass = GoodController.map_json_dataclass(validated_data)
-        updated_good = good_bl.update(good_dataclass)
+        try:
+            updated_good = good_bl.update(good_dataclass)
+        except Exception as err:
+            return ("Error", str(err)), 400
         json_good = good_schema.dump(obj=updated_good)
         return json_good, 201
 
