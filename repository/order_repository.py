@@ -2,7 +2,8 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 from sqlalchemy import Integer, String, Date, Float, inspect
 from datetime import datetime
-from datacls import Order_Dataclass, Item_Dataclass, Good_Dataclass
+from order_entity import OrderEntity
+from order_item_entity import OrderItemEntity
 from dataclasses import asdict
 
 engine = sa.create_engine(
@@ -49,10 +50,6 @@ class OrderHeader(Base):
                       "created_on": self.created_on}
         return info
 
-    def object_as_dict(obj):
-        return {c.key: getattr(obj, c.key)
-                for c in inspect(obj).mapper.column_attrs}
-
 
 class OrderItem(Base):
     __tablename__ = 'order_item'
@@ -73,24 +70,14 @@ class OrderItem(Base):
         self.quantity = quantity
 
 
-class GoodItem(Base):
-    __tablename__ = 'good'
-    good_id = sa.Column(Integer, primary_key=True)
-    name = sa.Column(String, nullable=False)
-    category = sa.Column(String, default='99')
-    availqty = sa.Column(Integer, default=0)
-    status = sa.Column(Integer, nullable=False)
-
-    def __init__(self, name: str, category: str, availqty: int, status: str):
-        self.name = name
-        self.category = category
-        self.availqty = availqty
-        self.status = status
-
 
 class OrderRepository():
-    def map_rep_dataclass(rep_data) -> Order_Dataclass:
-        order_dataclass = Order_Dataclass(
+
+    def __init__(self,order_entity: OrderEntity):
+        self._order_entity = order_entity
+
+    def _map_rep_dataclass(rep_data) -> OrderEntity:
+        order_dataclass = OrderEntity(
             order_id=rep_data.order_id,
             city=rep_data.city,
             amount=rep_data.amount,
@@ -103,7 +90,7 @@ class OrderRepository():
             customer_no=rep_data.customer_no,
             items=[])
         for i in range(rep_data.items.__len__()):
-            order_dataclass.items.insert(i, (Item_Dataclass(
+            order_dataclass.items.insert(i, (OrderItemEntity(
                 order_id=rep_data.items[i].order_id,
                 item_no=rep_data.items[i].item_no,
                 good_id=rep_data.items[i].good_id,
@@ -111,30 +98,29 @@ class OrderRepository():
                 quantity=rep_data.items[i].quantity)))
         return order_dataclass
 
-    def read_one(self, order_id: int) -> Order_Dataclass:
+    def read_one(self, order_id: int) -> OrderEntity:
 
         curr_session = Session()
         data = curr_session.query(OrderHeader).get(order_id)
-        order_dataclass = OrderRepository.map_rep_dataclass(data)
+        order_dataclass = OrderRepository._map_rep_dataclass(data)
         curr_session.close()
         return order_dataclass
 
-    def delete_one(self, order_id: int) -> Order_Dataclass:
+    def delete_one(self, order_id: int) -> OrderEntity:
 
         curr_session = Session()
         order_data = curr_session.query(OrderHeader).get(order_id)
         order_data.status = 10
         curr_session.add(order_data)
         curr_session.commit()
-        order_dataclass = OrderRepository.map_rep_dataclass(order_data)
+        order_dataclass = OrderRepository._map_rep_dataclass(order_data)
         curr_session.close()
         return order_dataclass
 
-    def update_one(self,
-                   order_data: Order_Dataclass) -> Order_Dataclass:
+    def update_one(self) -> OrderEntity:
 
         curr_session = Session()
-        order_dict = asdict(order_data)
+        order_dict = asdict(self._order_entity)
         items = order_dict["items"]
         order_rec = curr_session.query(OrderHeader).get(order_dict["order_id"])
 
@@ -160,14 +146,14 @@ class OrderRepository():
         curr_session.commit()
 
         data = curr_session.query(OrderHeader).get(order_dict["order_id"])
-        order_dataclass = OrderRepository.map_rep_dataclass(rep_data=data)
+        order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass
 
-    def create_one(self, order_data: Order_Dataclass) -> Order_Dataclass:
+    def create_one(self) -> OrderEntity:
 
         curr_session = Session()
-        order_dict = asdict(order_data)
+        order_dict = asdict(self._order_entity)
         items = order_dict["items"]
         created_header = OrderHeader(
             amount=order_dict["amount"], vat_amount=order_dict["vat_amount"],
@@ -189,66 +175,6 @@ class OrderRepository():
         curr_session.commit()
 
         data = curr_session.query(OrderHeader).get(created_header.order_id)
-        order_dataclass = OrderRepository.map_rep_dataclass(rep_data=data)
+        order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass
-
-
-class GoodRepository():
-    def map_rep_dataclass(rep_data) -> Good_Dataclass:
-        good_dataclass = Good_Dataclass(
-            good_id=rep_data.good_id,
-            name=rep_data.name,
-            category=rep_data.category,
-            availqty=rep_data.availqty,
-            status=rep_data.status)
-
-        return good_dataclass
-
-    def read_one(self, good_id: int) -> Good_Dataclass:
-        curr_session = Session()
-        data = curr_session.query(GoodItem).get(good_id)
-        good_dataclass = GoodRepository.map_rep_dataclass(data)
-        curr_session.close()
-        return good_dataclass
-
-    def delete_one(self, good_id: int) -> Good_Dataclass:
-
-        curr_session = Session()
-        orig_data = curr_session.query(GoodItem).get(good_id)
-        orig_data.status = 10
-        curr_session.add(orig_data)
-        curr_session.commit()
-        good_dataclass = GoodRepository.map_rep_dataclass(orig_data)
-        curr_session.close()
-        return good_dataclass
-
-    def create_one(self, good_data: Good_Dataclass) -> Good_Dataclass:
-        curr_session = Session()
-        created_good = GoodItem(name=good_data.name,
-                                category=good_data.category,
-                                availqty=good_data.availqty,
-                                status=good_data.status)
-        curr_session.add(created_good)
-        curr_session.commit()
-        good_dataclass = GoodRepository.map_rep_dataclass(created_good)
-
-        curr_session.close()
-
-        return good_dataclass
-
-    def update_one(self,
-                   good_data: Good_Dataclass) -> Good_Dataclass:
-        curr_session = Session()
-        updated_good = GoodItem(name=good_data.name,
-                                category=good_data.category,
-                                availqty=good_data.availqty,
-                                status=good_data.status)
-        updated_good.good_id = good_data.good_id
-        curr_session.merge(updated_good)
-        curr_session.commit()
-
-        data = curr_session.query(GoodItem).get(good_data.good_id)
-        good_dataclass = GoodRepository.map_rep_dataclass(data)
-        curr_session.close()
-        return good_dataclass
