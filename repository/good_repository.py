@@ -44,6 +44,8 @@ class GoodRepository():
     def read_one(self, good_id: int) -> GoodEntity:
         curr_session = Session()
         data = curr_session.query(GoodItem).get(good_id)
+        if len(data) == 0:
+            return {}
         good_dataclass = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
         return good_dataclass
@@ -52,6 +54,8 @@ class GoodRepository():
 
         curr_session = Session()
         orig_data = curr_session.query(GoodItem).get(good_id)
+        if len(orig_data) == 0:
+            return {}
         orig_data.status = 10
         curr_session.add(orig_data)
         curr_session.commit()
@@ -84,6 +88,8 @@ class GoodRepository():
         curr_session.commit()
 
         data = curr_session.query(GoodItem).get(self._good_entity.good_id)
+        if len(data) == 0:
+            return {}
         good_dataclass = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
         return good_dataclass

@@ -6,10 +6,9 @@ import json
 from order_item_entity import OrderItemEntity
 from order_entity import OrderEntity
 from order_http_dto_schema import OrderHttpDtoSchema
+import logging
 
-app = Flask(__name__)
-api = Api()
-
+logging.basicConfig(filename="py_log.py",filemode="w",level=logging.INFO)
 
 
 class OrderHandler(Resource):
@@ -40,20 +39,22 @@ class OrderHandler(Resource):
         try:
             order_data = order_srv.get(order_id)
         except Exception as err:
-            return ("Error", str(err)), 400
+            logging.error(str(err), exc_info=True)
+            return {"Error": "internal server error"}, 500
         order_schema = OrderHttpDtoSchema()
-        json_order = order_schema.dump(obj=order_data)
-        return json_order, 200
+        order_json = order_schema.dump(obj=order_data)
+        return order_json, 200
 
     def delete(self, order_id: int):
         order_srv = OrderService()
         try:
             deleted_order = order_srv.delete(order_id)
         except Exception as err:
-            return ("Error", str(err)), 400
+            logging.error(str(err), exc_info=True)
+            return {"Error": "internal server error"}, 500
         order_schema = OrderHttpDtoSchema()
-        json_order = order_schema.dump(obj=deleted_order)
-        return json_order, 200
+        order_json = order_schema.dump(obj=deleted_order)
+        return order_json, 200
 
     def post(self, order_id: int):
         order_schema = OrderHttpDtoSchema()
@@ -61,14 +62,16 @@ class OrderHandler(Resource):
             input_json: str = json.dumps(request.get_json())
             validated_data = order_schema.loads(json_data=input_json)
         except ValidationError as err:
-            return ("Error", err.messages), 422
+            logging.error(str(err), exc_info=True)
+            return {"Error": "validation error"}, 400
         order_srv = OrderService(OrderHandler._map_json_dataclass(validated_data))
         try:
             created_order = order_srv.create()
         except Exception as err:
-            return ("Error", str(err)), 400
-        json_order = order_schema.dump(obj=created_order)
-        return json_order, 201
+            logging.error(str(err), exc_info=True)
+            return {"Error": "internal server error"}, 500
+        order_json = order_schema.dump(obj=created_order)
+        return order_json, 200
 
     def put(self, order_id: int):
         order_schema = OrderHttpDtoSchema()
@@ -76,20 +79,14 @@ class OrderHandler(Resource):
             input_json: str = json.dumps(request.get_json())
             validated_data = order_schema.loads(json_data=input_json)
         except ValidationError as err:
-            return ("Error", err.messages), 422
+            logging.error(str(err), exc_info=True)
+            return {"Error": "validation error"}, 400
         order_srv = OrderService(OrderHandler._map_json_dataclass(validated_data))
         try:
             updated_order = order_srv.update()
         except Exception as err:
-            return ("Error", str(err)), 400
-        json_order = order_schema.dump(obj=updated_order)
-        return json_order, 201
+            logging.error(str(err), exc_info=True)
+            return {"Error": "internal server error"}, 500
+        order_json = order_schema.dump(obj=updated_order)
+        return order_json, 200
 
-
-
-
-
-api.add_resource(OrderHandler, "/api/order/<int:order_id>")
-api.init_app(app)
-if __name__ == "__main__":
-    app.run(debug=True, port=5000, host="127.0.0.1")

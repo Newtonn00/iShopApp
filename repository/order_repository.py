@@ -4,7 +4,6 @@ from sqlalchemy import Integer, String, Date, Float, inspect
 from datetime import datetime
 from order_entity import OrderEntity
 from order_item_entity import OrderItemEntity
-from dataclasses import asdict
 
 engine = sa.create_engine(
     "postgresql+psycopg2://ishop_admin:Password78@178.20.40.136/ishop_db",
@@ -89,7 +88,7 @@ class OrderRepository():
             created_by=rep_data.created_by,
             customer_no=rep_data.customer_no,
             items=[])
-        for i in range(rep_data.items.__len__()):
+        for i in range(len(rep_data.items)):
             order_dataclass.items.insert(i, (OrderItemEntity(
                 order_id=rep_data.items[i].order_id,
                 item_no=rep_data.items[i].item_no,
@@ -102,6 +101,8 @@ class OrderRepository():
 
         curr_session = Session()
         data = curr_session.query(OrderHeader).get(order_id)
+        if len(data) == 0:
+            return {}
         order_dataclass = OrderRepository._map_rep_dataclass(data)
         curr_session.close()
         return order_dataclass
@@ -110,6 +111,8 @@ class OrderRepository():
 
         curr_session = Session()
         order_data = curr_session.query(OrderHeader).get(order_id)
+        if len(order_data) == 0:
+            return {}
         order_data.status = 10
         curr_session.add(order_data)
         curr_session.commit()
@@ -120,32 +123,31 @@ class OrderRepository():
     def update_one(self) -> OrderEntity:
 
         curr_session = Session()
-        order_dict = asdict(self._order_entity)
-        items = order_dict["items"]
-        order_rec = curr_session.query(OrderHeader).get(order_dict["order_id"])
-
+        items = self._order_entity.items
+        order_rec = curr_session.query(OrderHeader).get(self._order_entity.order_id)
+        if len(order_rec) == 0:
+            return {}
         updated_header = OrderHeader(
-                                     amount=order_dict["amount"],
-                                     vat_amount=order_dict["vat_amount"],
-                                     quantity=order_dict["quantity"],
-                                     weight=order_dict["weight"],
+                                     amount=self._order_entity.amount,
+                                     vat_amount=self._order_entity.vat_amount,
+                                     quantity=self._order_entity.quantity,
+                                     weight=self._order_entity.weight,
                                      city=order_rec.city,
                                      status=order_rec.status,
                                      created_on=order_rec.created_on,
                                      created_by=order_rec.created_by,
                                      customer_no=order_rec.customer_no)
-        updated_header.order_id = order_dict["order_id"]
+        updated_header.order_id = self._order_entity.order_id
         curr_session.merge(updated_header)
         for i in range(len(items)):
-            good = items[i]
             updated_item = OrderItem(
-                order_id=order_dict["order_id"], item_no=(i+1)*10,
-                good_id=good["good_id"],
-                good_name=good["good_name"], quantity=good["quantity"])
+                order_id=self._order_entity.order_id, item_no=(i+1)*10,
+                good_id=items[i].good_id,
+                good_name=items[i].good_name, quantity=items[i].quantity)
             curr_session.merge(updated_item)
         curr_session.commit()
 
-        data = curr_session.query(OrderHeader).get(order_dict["order_id"])
+        data = curr_session.query(OrderHeader).get(self._order_entity.order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass
@@ -153,23 +155,21 @@ class OrderRepository():
     def create_one(self) -> OrderEntity:
 
         curr_session = Session()
-        order_dict = asdict(self._order_entity)
-        items = order_dict["items"]
+        items = self._order_entity.items
         created_header = OrderHeader(
-            amount=order_dict["amount"], vat_amount=order_dict["vat_amount"],
-            quantity=order_dict["quantity"], weight=order_dict["weight"],
-            city=order_dict["city"], status=1,
-            created_on=datetime.now(), created_by=order_dict["created_by"],
-            customer_no=order_dict["customer_no"])
+            amount=self._order_entity.amount, vat_amount=self._order_entity.vat_amount,
+            quantity=self._order_entity.quantity, weight=self._order_entity.weight,
+            city=self._order_entity.city, status=1,
+            created_on=datetime.now(), created_by=self._order_entity.created_by,
+            customer_no=self._order_entity.customer_no)
 
         curr_session.add(created_header)
         curr_session.commit()
         for i in range(len(items)):
-            good = order_dict["items"][i]
             created_item = OrderItem(
                 order_id=created_header.order_id, item_no=(i + 1) * 10,
-                good_id=good["good_id"],
-                good_name=good["good_name"], quantity=good["quantity"])
+                good_id=items[i].good_id,
+                good_name=items[i].good_name, quantity=items[i].quantity)
             curr_session.add(created_item)
 
         curr_session.commit()
