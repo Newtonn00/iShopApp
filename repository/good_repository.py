@@ -1,15 +1,10 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import Integer, String
 from good_entity import GoodEntity
+from repo_connection import EngineConnection
 
-engine = sa.create_engine(
-    "postgresql+psycopg2://ishop_admin:Password78@178.20.40.136/ishop_db",
-    echo=True, pool_size=5)
-engine.connect()
-Session = sessionmaker(bind=engine)
 Base = declarative_base()
-
 
 class GoodItem(Base):
     __tablename__ = 'good'
@@ -28,8 +23,10 @@ class GoodItem(Base):
 
 class GoodRepository():
 
-    def __init__(self, good_entity: GoodEntity):
+    def __init__(self, engine_connection: EngineConnection,
+                 good_entity: GoodEntity = None):
         self._good_entity = good_entity
+        self._session = engine_connection.session
 
     def _map_rep_dataclass(rep_data) -> GoodEntity:
         good_dataclass = GoodEntity(
@@ -42,20 +39,17 @@ class GoodRepository():
         return good_dataclass
 
     def read_one(self, good_id: int) -> GoodEntity:
-        curr_session = Session()
+        curr_session = self._session()
+
         data = curr_session.query(GoodItem).get(good_id)
-        if len(data) == 0:
-            return {}
         good_dataclass = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
         return good_dataclass
 
     def delete_one(self, good_id: int) -> GoodEntity:
 
-        curr_session = Session()
+        curr_session = self._session()
         orig_data = curr_session.query(GoodItem).get(good_id)
-        if len(orig_data) == 0:
-            return {}
         orig_data.status = 10
         curr_session.add(orig_data)
         curr_session.commit()
@@ -64,7 +58,7 @@ class GoodRepository():
         return good_dataclass
 
     def create_one(self) -> GoodEntity:
-        curr_session = Session()
+        curr_session = self._session()
         created_good = GoodItem(name=self._good_entity.name,
                                 category=self._good_entity.category,
                                 availqty=self._good_entity.availqty,
@@ -78,7 +72,7 @@ class GoodRepository():
         return good_dataclass
 
     def update_one(self) -> GoodEntity:
-        curr_session = Session()
+        curr_session = self._session()
         updated_good = GoodItem(name=self._good_entity.name,
                                 category=self._good_entity.category,
                                 availqty=self._good_entity.availqty,
@@ -88,8 +82,6 @@ class GoodRepository():
         curr_session.commit()
 
         data = curr_session.query(GoodItem).get(self._good_entity.good_id)
-        if len(data) == 0:
-            return {}
         good_dataclass = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
         return good_dataclass

@@ -1,15 +1,11 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base
-from sqlalchemy import Integer, String, Date, Float, inspect
+from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy import Integer, String, Date, Float
 from datetime import datetime
 from order_entity import OrderEntity
 from order_item_entity import OrderItemEntity
+from repo_connection import EngineConnection
 
-engine = sa.create_engine(
-    "postgresql+psycopg2://ishop_admin:Password78@178.20.40.136/ishop_db",
-    echo=True, pool_size=5)
-engine.connect()
-Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
 
@@ -72,9 +68,10 @@ class OrderItem(Base):
 
 class OrderRepository():
 
-    def __init__(self,order_entity: OrderEntity):
+    def __init__(self,engine_connection: EngineConnection,
+                 order_entity: OrderEntity = None):
         self._order_entity = order_entity
-
+        self._session = engine_connection.session
     def _map_rep_dataclass(rep_data) -> OrderEntity:
         order_dataclass = OrderEntity(
             order_id=rep_data.order_id,
@@ -99,20 +96,16 @@ class OrderRepository():
 
     def read_one(self, order_id: int) -> OrderEntity:
 
-        curr_session = Session()
+        curr_session = self._session()
         data = curr_session.query(OrderHeader).get(order_id)
-        if len(data) == 0:
-            return {}
         order_dataclass = OrderRepository._map_rep_dataclass(data)
         curr_session.close()
         return order_dataclass
 
     def delete_one(self, order_id: int) -> OrderEntity:
 
-        curr_session = Session()
+        curr_session = self._session()
         order_data = curr_session.query(OrderHeader).get(order_id)
-        if len(order_data) == 0:
-            return {}
         order_data.status = 10
         curr_session.add(order_data)
         curr_session.commit()
@@ -122,11 +115,9 @@ class OrderRepository():
 
     def update_one(self) -> OrderEntity:
 
-        curr_session = Session()
+        curr_session = self._session()
         items = self._order_entity.items
         order_rec = curr_session.query(OrderHeader).get(self._order_entity.order_id)
-        if len(order_rec) == 0:
-            return {}
         updated_header = OrderHeader(
                                      amount=self._order_entity.amount,
                                      vat_amount=self._order_entity.vat_amount,
@@ -154,7 +145,7 @@ class OrderRepository():
 
     def create_one(self) -> OrderEntity:
 
-        curr_session = Session()
+        curr_session = self._session()
         items = self._order_entity.items
         created_header = OrderHeader(
             amount=self._order_entity.amount, vat_amount=self._order_entity.vat_amount,

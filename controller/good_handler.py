@@ -3,18 +3,18 @@ from flask_restful import Resource
 from good_service import GoodService
 from marshmallow import ValidationError
 from good_http_dto_schema import GoodHttpDtoSchema
-import json
-from good_entity import GoodEntity
+from good_dto import GoodDto
 import logging
+from repo_connection import EngineConnection
+
 
 logging.basicConfig(filename="py_log.py",filemode="w",level=logging.INFO)
-
+engine_connection = EngineConnection()
 
 class GoodHandler(Resource):
 
-    def _map_json_dataclass(json_data: dict) -> GoodEntity:
-        good_dataclass = GoodEntity(
-            good_id=json_data["good_id"],
+    def _map_json_dataclass(json_data: dict) -> GoodDto:
+        good_dataclass = GoodDto(
             name=json_data["name"],
             category=json_data["category"],
             availqty=json_data["availqty"],
@@ -23,7 +23,7 @@ class GoodHandler(Resource):
         return good_dataclass
 
     def get(self, good_id: int):
-        good_srv = GoodService()
+        good_srv = GoodService(engine_connection=engine_connection)
         try:
             good_data = good_srv.get(good_id)
         except Exception as err:
@@ -34,7 +34,7 @@ class GoodHandler(Resource):
         return good_json, 200
 
     def delete(self, good_id: int):
-        good_srv = GoodService()
+        good_srv = GoodService(engine_connection=engine_connection)
         try:
             deleted_good = good_srv.delete(good_id)
         except Exception as err:
@@ -47,12 +47,12 @@ class GoodHandler(Resource):
     def post(self, good_id: int):
         good_schema = GoodHttpDtoSchema()
         try:
-            input_json: str = json.dumps(request.get_json())
-            validated_data = good_schema.loads(json_data=input_json)
+            validated_data = good_schema.load(request.get_json())
         except ValidationError as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "validation error"}, 400
-        good_srv = GoodService(GoodHandler._map_json_dataclass(validated_data))
+        good_srv = GoodService(good_dto=GoodHandler._map_json_dataclass(validated_data),
+                               engine_connection=engine_connection)
         try:
             created_good = good_srv.create()
         except Exception as err:
@@ -64,14 +64,14 @@ class GoodHandler(Resource):
     def put(self, good_id: int):
         good_schema = GoodHttpDtoSchema()
         try:
-            input_json: str = json.dumps(request.get_json())
-            validated_data = good_schema.loads(json_data=input_json)
+            validated_data = good_schema.load(request.get_json())
         except ValidationError as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "validation error"}, 400
-        good_srv = GoodService(GoodHandler._map_json_dataclass(validated_data))
+        good_srv = GoodService(good_dto=GoodHandler._map_json_dataclass(validated_data),
+                               engine_connection=engine_connection)
         try:
-            updated_good = good_srv.update()
+            updated_good = good_srv.update(good_id)
         except Exception as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "internal server error"}, 500
