@@ -1,16 +1,10 @@
 import requests
 import configparser, json
 
-config = configparser.ConfigParser()
-config.read('settings.ini')
-host = config['db']['host']
-
-
-print(host)
 
 # res = requests.get("http://127.0.0.1:5000/api/order/56")
 # print(res.json())
-# res = requests.get("http://127.0.0.1:5000/api/good/1115")
+# res = requests.get("http://127.0.0.1:5000/api/good/3")
 # print(res.json())
 
 # res = requests.delete("http://127.0.0.1:5000/api/order/25")
@@ -34,10 +28,10 @@ print(host)
 #                                     "good_name": "Chair", "quantity": 2}]})
 # print(res.json())
 
-# res = requests.post("http://127.0.0.1:5000/api/good/5",
-#                    json={"good_id": 0, "name": "Chair",
-#                          "availqty": 15, "category": "99", "status": 1})
-# print(res.json())
+res = requests.post("http://127.0.0.1:5000/api/good/5",
+                    json={"good_id": 0, "name": "Chair big",
+                          "availqty": 125, "category": "999", "status": 1})
+print(res.json())
 
 # res = requests.put("http://127.0.0.1:5000/api/good/8",
 #                   json={"good_id": 8, "name": "Chair",

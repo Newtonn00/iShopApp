@@ -1,76 +1,14 @@
-import sqlalchemy as sa
-from sqlalchemy.orm import relationship, declarative_base
-from sqlalchemy import Integer, String, Date, Float
 from datetime import datetime
 from order_entity import OrderEntity
 from order_item_entity import OrderItemEntity
 from repo_connection import EngineConnection
-
-Base = declarative_base()
-
-
-class OrderHeader(Base):
-    __tablename__ = 'order_header'
-    order_id = sa.Column(Integer, primary_key=True, autoincrement=True,
-                         nullable=False)
-    city = sa.Column(String)
-    amount = sa.Column(Float)
-    vat_amount = sa.Column(Float)
-    quantity = sa.Column(Integer)
-    weight = sa.Column(Float)
-    status = sa.Column(Integer)
-    created_on = sa.Column(Date)
-    created_by = sa.Column(String)
-    customer_no = sa.Column(String)
-    items = relationship('OrderItem')
-
-    def __init__(self, city: str, amount: float, vat_amount: float,
-                 quantity: int,
-                 weight: float, status: int, created_on: datetime,
-                 created_by: str, customer_no: str):
-        self.city = city
-        self.amount = amount
-        self.vat_amount = vat_amount
-        self.quantity = quantity
-        self.weight = weight
-        self.status = status
-        self.created_on = created_on
-        self.created_by = created_by
-        self.customer_no = customer_no
-
-    def __repr__(self):
-        info: dict = {"order_id": self.order_id,
-                      "quantity": self.quantity,
-                      "status": self.status,
-                      "created_on": self.created_on}
-        return info
+from order_repo_entity import OrderHeader
+from order_item_repo_entity import OrderItem
 
 
-class OrderItem(Base):
-    __tablename__ = 'order_item'
-    order_id = sa.Column(Integer, sa.ForeignKey("order_header.order_id"),
-                         primary_key=True)
-    item_no = sa.Column(Integer, autoincrement=False, primary_key=True,
-                        nullable=False)
-    good_id = sa.Column(Integer, sa.ForeignKey("good.good_id"))
-    good_name = sa.Column(String, nullable=False)
-    quantity = sa.Column(Integer, nullable=False, default=0)
+class OrderRepository:
 
-    def __init__(self, order_id: int, item_no: int, good_id: int,
-                 good_name: str, quantity: int):
-        self.order_id = order_id
-        self.item_no = item_no
-        self.good_id = good_id
-        self.good_name = good_name
-        self.quantity = quantity
-
-
-
-class OrderRepository():
-
-    def __init__(self,engine_connection: EngineConnection,
-                 order_entity: OrderEntity = None):
-        self._order_entity = order_entity
+    def __init__(self,engine_connection: EngineConnection):
         self._session = engine_connection.session
     def _map_rep_dataclass(rep_data) -> OrderEntity:
         order_dataclass = OrderEntity(
@@ -113,46 +51,46 @@ class OrderRepository():
         curr_session.close()
         return order_dataclass
 
-    def update_one(self) -> OrderEntity:
+    def update_one(self, order_entity: OrderEntity) -> OrderEntity:
 
         curr_session = self._session()
-        items = self._order_entity.items
-        order_rec = curr_session.query(OrderHeader).get(self._order_entity.order_id)
+        items = order_entity.items
+        order_rec = curr_session.query(OrderHeader).get(order_entity.order_id)
         updated_header = OrderHeader(
-                                     amount=self._order_entity.amount,
-                                     vat_amount=self._order_entity.vat_amount,
-                                     quantity=self._order_entity.quantity,
-                                     weight=self._order_entity.weight,
+                                     amount=order_entity.amount,
+                                     vat_amount=order_entity.vat_amount,
+                                     quantity=order_entity.quantity,
+                                     weight=order_entity.weight,
                                      city=order_rec.city,
                                      status=order_rec.status,
                                      created_on=order_rec.created_on,
                                      created_by=order_rec.created_by,
                                      customer_no=order_rec.customer_no)
-        updated_header.order_id = self._order_entity.order_id
+        updated_header.order_id = order_entity.order_id
         curr_session.merge(updated_header)
         for i in range(len(items)):
             updated_item = OrderItem(
-                order_id=self._order_entity.order_id, item_no=(i+1)*10,
+                order_id=order_entity.order_id, item_no=(i+1)*10,
                 good_id=items[i].good_id,
                 good_name=items[i].good_name, quantity=items[i].quantity)
             curr_session.merge(updated_item)
         curr_session.commit()
 
-        data = curr_session.query(OrderHeader).get(self._order_entity.order_id)
+        data = curr_session.query(OrderHeader).get(order_entity.order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass
 
-    def create_one(self) -> OrderEntity:
+    def create_one(self, order_entity: OrderEntity) -> OrderEntity:
 
         curr_session = self._session()
-        items = self._order_entity.items
+        items = order_entity.items
         created_header = OrderHeader(
-            amount=self._order_entity.amount, vat_amount=self._order_entity.vat_amount,
-            quantity=self._order_entity.quantity, weight=self._order_entity.weight,
-            city=self._order_entity.city, status=1,
-            created_on=datetime.now(), created_by=self._order_entity.created_by,
-            customer_no=self._order_entity.customer_no)
+            amount=order_entity.amount, vat_amount=order_entity.vat_amount,
+            quantity=order_entity.quantity, weight=order_entity.weight,
+            city=order_entity.city, status=1,
+            created_on=datetime.now(), created_by=order_entity.created_by,
+            customer_no=order_entity.customer_no)
 
         curr_session.add(created_header)
         curr_session.commit()

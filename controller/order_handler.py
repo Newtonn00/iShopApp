@@ -7,10 +7,10 @@ from order_dto import OrderDto
 from order_item_dto import OrderItemDto
 from order_http_dto_schema import OrderHttpDtoSchema
 import logging
-from repo_connection import EngineConnection
+from containers import Containers
 
 logging.basicConfig(filename="py_log.py",filemode="w",level=logging.INFO)
-engine_connection = EngineConnection()
+order_srv = Containers.order_service()
 
 class OrderHandler(Resource):
 
@@ -34,7 +34,6 @@ class OrderHandler(Resource):
         return order_dataclass
 
     def get(self, order_id: int):
-        order_srv = OrderService(engine_connection=engine_connection)
         try:
             order_data = order_srv.get(order_id)
         except Exception as err:

@@ -1,15 +1,14 @@
 from flask import request
 from flask_restful import Resource
-from good_service import GoodService
 from marshmallow import ValidationError
 from good_http_dto_schema import GoodHttpDtoSchema
 from good_dto import GoodDto
 import logging
-from repo_connection import EngineConnection
+from containers import Containers
 
-
+containers = Containers()
+good_srv = containers.good_service()
 logging.basicConfig(filename="py_log.py",filemode="w",level=logging.INFO)
-engine_connection = EngineConnection()
 
 class GoodHandler(Resource):
 
@@ -23,7 +22,6 @@ class GoodHandler(Resource):
         return good_dataclass
 
     def get(self, good_id: int):
-        good_srv = GoodService(engine_connection=engine_connection)
         try:
             good_data = good_srv.get(good_id)
         except Exception as err:
@@ -34,7 +32,6 @@ class GoodHandler(Resource):
         return good_json, 200
 
     def delete(self, good_id: int):
-        good_srv = GoodService(engine_connection=engine_connection)
         try:
             deleted_good = good_srv.delete(good_id)
         except Exception as err:
@@ -51,10 +48,9 @@ class GoodHandler(Resource):
         except ValidationError as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "validation error"}, 400
-        good_srv = GoodService(good_dto=GoodHandler._map_json_dataclass(validated_data),
-                               engine_connection=engine_connection)
+        good_dto = GoodHandler._map_json_dataclass(validated_data)
         try:
-            created_good = good_srv.create()
+            created_good = good_srv.create(good_dto=good_dto)
         except Exception as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "internal server error"}, 500
@@ -68,10 +64,9 @@ class GoodHandler(Resource):
         except ValidationError as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "validation error"}, 400
-        good_srv = GoodService(good_dto=GoodHandler._map_json_dataclass(validated_data),
-                               engine_connection=engine_connection)
+        good_dto = GoodHandler._map_json_dataclass(validated_data)
         try:
-            updated_good = good_srv.update(good_id)
+            updated_good = good_srv.update(good_id=good_id,good_dto=good_dto)
         except Exception as err:
             logging.error(str(err), exc_info=True)
             return {"Error": "internal server error"}, 500
