@@ -1,0 +1,8 @@
+flask
+flask_restful
+marshmallow
+sqlalchemy
+dependency-injector
+requests
+postgres
+

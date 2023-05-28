@@ -1,6 +1,6 @@
-from good_entity import GoodEntity
-from repo_connection import EngineConnection
-from good_repo_entity import GoodItem
+from entity.good_entity import GoodEntity
+from controller.repo_connection import EngineConnection
+from repository.good_repo_entity import GoodItemModel
 
 
 class GoodRepository:
@@ -14,23 +14,23 @@ class GoodRepository:
             name=rep_data.name,
             category=rep_data.category,
             availqty=rep_data.availqty,
-            status=rep_data.status)
+            status_code=rep_data.status_code.rstrip())
 
         return good_dataclass
 
     def read_one(self, good_id: int) -> GoodEntity:
         curr_session = self._session()
 
-        data = curr_session.query(GoodItem).get(good_id)
-        good_dataclass = GoodRepository._map_rep_dataclass(data)
+        data = curr_session.query(GoodItemModel).get(good_id)
+        good_dataclass2 = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
-        return good_dataclass
+        return good_dataclass2
 
     def delete_one(self, good_id: int) -> GoodEntity:
 
         curr_session = self._session()
-        orig_data = curr_session.query(GoodItem).get(good_id)
-        orig_data.status = 10
+        orig_data = curr_session.query(GoodItemModel).get(good_id)
+        orig_data.status_code = '10'
         curr_session.add(orig_data)
         curr_session.commit()
         good_dataclass = GoodRepository._map_rep_dataclass(orig_data)
@@ -39,12 +39,13 @@ class GoodRepository:
 
     def create_one(self, good_entity: GoodEntity) -> GoodEntity:
         curr_session = self._session()
-        created_good = GoodItem(name=good_entity.name,
-                                category=good_entity.category,
-                                availqty=good_entity.availqty,
-                                status=good_entity.status)
+        created_good = GoodItemModel(name=good_entity.name,
+                                     category=good_entity.category,
+                                     availqty=good_entity.availqty,
+                                     status_code='10')
         curr_session.add(created_good)
         curr_session.commit()
+
         good_dataclass = GoodRepository._map_rep_dataclass(created_good)
 
         curr_session.close()
@@ -53,15 +54,15 @@ class GoodRepository:
 
     def update_one(self, good_entity: GoodEntity) -> GoodEntity:
         curr_session = self._session()
-        updated_good = GoodItem(name=good_entity.name,
-                                category=good_entity.category,
-                                availqty=good_entity.availqty,
-                                status=good_entity.status)
+        updated_good = GoodItemModel(name=good_entity.name,
+                                     category=good_entity.category,
+                                     availqty=good_entity.availqty,
+                                     status_code='10')
         updated_good.good_id = good_entity.good_id
         curr_session.merge(updated_good)
         curr_session.commit()
 
-        data = curr_session.query(GoodItem).get(good_entity.good_id)
+        data = curr_session.query(GoodItemModel).get(good_entity.good_id)
         good_dataclass = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
         return good_dataclass

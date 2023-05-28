@@ -2,12 +2,11 @@ import sqlalchemy as sa
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy import Integer, String, Date, Float
 from datetime import datetime
-from order_item_repo_entity import OrderItem
 
 Base = declarative_base()
 
 
-class OrderHeader(Base):
+class OrderHeaderModel(Base):
     __tablename__ = 'order_header'
     order_id = sa.Column(Integer, primary_key=True, autoincrement=True,
                          nullable=False)

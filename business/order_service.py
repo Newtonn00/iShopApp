@@ -1,7 +1,8 @@
-from order_repository import OrderRepository
-from order_entity import OrderEntity
-from order_item_entity import OrderItemEntity
-from order_dto import OrderDto
+from repository.order_repository import OrderRepository
+from entity.order_entity import OrderEntity
+from entity.order_item_entity import OrderItemEntity
+from business.order_create_dto import OrderCreateDto
+from business.order_update_dto import OrderUpdateDto
 
 
 class OrderService:
@@ -10,14 +11,14 @@ class OrderService:
         self._order_repo = order_repo
 
     def get(self, order_id: int) -> OrderEntity:
-        order_dataclass = self._order_repo.read_one(order_id)
-        return order_dataclass
+        order_entity = self._order_repo.read_one(order_id)
+        return order_entity
 
     def delete(self, order_id: int) -> OrderEntity:
-        order_dataclass = self._order_repo.delete_one(order_id)
-        return order_dataclass
+        order_entity = self._order_repo.delete_one(order_id)
+        return order_entity
 
-    def create(self, order_dto: OrderDto) -> OrderEntity:
+    def create(self, order_dto: OrderCreateDto) -> OrderEntity:
         order_entity = OrderEntity(order_id=0,
                                    city=order_dto.city,
                                    amount=order_dto.amount,
@@ -29,20 +30,22 @@ class OrderService:
                                    created_on=order_dto.created_on,
                                    status=order_dto.status,
                                    items=[])
-        for i in range(len(order_dto.items)):
+        i = 0
+        for item in order_dto.items:
             order_entity.items.insert(i, (OrderItemEntity(
                 order_id=0,
-                item_no=order_dto.items[i].item_no,
-                good_id=order_dto.items[i].good_id,
-                good_name=order_dto.items[i].good_name,
-                quantity=order_dto.items[i].quantity)))
+                item_no=item.item_no,
+                good_id=item.good_id,
+                good_name=item.good_name,
+                quantity=item.quantity)))
+            i = i + 1
 
         order_entity_new = self._order_repo.create_one(order_entity)
         return order_entity_new
 
-    def update(self, order_id: int, order_dto: OrderDto) -> OrderEntity:
+    def update(self, order_dto: OrderUpdateDto) -> OrderEntity:
 
-        order_entity = OrderEntity(order_id=order_id,
+        order_entity = OrderEntity(order_id=order_dto.order_id,
                                    city=order_dto.city,
                                    amount=order_dto.amount,
                                    vat_amount=order_dto.vat_amount,
@@ -53,13 +56,15 @@ class OrderService:
                                    created_on=order_dto.created_on,
                                    status=order_dto.status,
                                    items=[])
-        for i in range(len(order_dto.items)):
+        i = 0
+        for item in order_dto.items:
             order_entity.items.insert(i, (OrderItemEntity(
-                order_id=order_id,
-                item_no=order_dto.items[i].item_no,
-                good_id=order_dto.items[i].good_id,
-                good_name=order_dto.items[i].good_name,
-                quantity=order_dto.items[i].quantity)))
+                order_id=order_dto.order_id,
+                item_no=item.item_no,
+                good_id=item.good_id,
+                good_name=item.good_name,
+                quantity=item.quantity)))
+            i = i + 1
 
         order_entity_new = self._order_repo.update_one(order_entity)
         return order_entity_new

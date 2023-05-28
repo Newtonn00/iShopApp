@@ -1,15 +1,16 @@
 from datetime import datetime
-from order_entity import OrderEntity
-from order_item_entity import OrderItemEntity
-from repo_connection import EngineConnection
-from order_repo_entity import OrderHeader
-from order_item_repo_entity import OrderItem
+from entity.order_entity import OrderEntity
+from entity.order_item_entity import OrderItemEntity
+from controller.repo_connection import EngineConnection
+from repository.order_repo_entity import OrderHeaderModel
+from repository.order_item_repo_entity import OrderItemModel
 
 
 class OrderRepository:
 
-    def __init__(self,engine_connection: EngineConnection):
+    def __init__(self, engine_connection: EngineConnection):
         self._session = engine_connection.session
+
     def _map_rep_dataclass(rep_data) -> OrderEntity:
         order_dataclass = OrderEntity(
             order_id=rep_data.order_id,
@@ -35,7 +36,7 @@ class OrderRepository:
     def read_one(self, order_id: int) -> OrderEntity:
 
         curr_session = self._session()
-        data = curr_session.query(OrderHeader).get(order_id)
+        data = curr_session.query(OrderHeaderModel).get(order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(data)
         curr_session.close()
         return order_dataclass
@@ -43,7 +44,7 @@ class OrderRepository:
     def delete_one(self, order_id: int) -> OrderEntity:
 
         curr_session = self._session()
-        order_data = curr_session.query(OrderHeader).get(order_id)
+        order_data = curr_session.query(OrderHeaderModel).get(order_id)
         order_data.status = 10
         curr_session.add(order_data)
         curr_session.commit()
@@ -55,8 +56,8 @@ class OrderRepository:
 
         curr_session = self._session()
         items = order_entity.items
-        order_rec = curr_session.query(OrderHeader).get(order_entity.order_id)
-        updated_header = OrderHeader(
+        order_rec = curr_session.query(OrderHeaderModel).get(order_entity.order_id)
+        updated_header = OrderHeaderModel(
                                      amount=order_entity.amount,
                                      vat_amount=order_entity.vat_amount,
                                      quantity=order_entity.quantity,
@@ -68,15 +69,17 @@ class OrderRepository:
                                      customer_no=order_rec.customer_no)
         updated_header.order_id = order_entity.order_id
         curr_session.merge(updated_header)
-        for i in range(len(items)):
-            updated_item = OrderItem(
+        i = 0
+        for item in items:
+            updated_item = OrderItemModel(
                 order_id=order_entity.order_id, item_no=(i+1)*10,
-                good_id=items[i].good_id,
-                good_name=items[i].good_name, quantity=items[i].quantity)
+                good_id=item.good_id,
+                good_name=item.good_name, quantity=item.quantity)
             curr_session.merge(updated_item)
+            i = i + 1
         curr_session.commit()
 
-        data = curr_session.query(OrderHeader).get(order_entity.order_id)
+        data = curr_session.query(OrderHeaderModel).get(order_entity.order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass
@@ -85,7 +88,7 @@ class OrderRepository:
 
         curr_session = self._session()
         items = order_entity.items
-        created_header = OrderHeader(
+        created_header = OrderHeaderModel(
             amount=order_entity.amount, vat_amount=order_entity.vat_amount,
             quantity=order_entity.quantity, weight=order_entity.weight,
             city=order_entity.city, status=1,
@@ -94,16 +97,18 @@ class OrderRepository:
 
         curr_session.add(created_header)
         curr_session.commit()
-        for i in range(len(items)):
-            created_item = OrderItem(
+        i = 0
+        for item in items:
+            created_item = OrderItemModel(
                 order_id=created_header.order_id, item_no=(i + 1) * 10,
-                good_id=items[i].good_id,
-                good_name=items[i].good_name, quantity=items[i].quantity)
+                good_id=item.good_id,
+                good_name=item.good_name, quantity=item.quantity)
             curr_session.add(created_item)
+            i = i + 1
 
         curr_session.commit()
 
-        data = curr_session.query(OrderHeader).get(created_header.order_id)
+        data = curr_session.query(OrderHeaderModel).get(created_header.order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(rep_data=data)
         curr_session.close()
         return order_dataclass

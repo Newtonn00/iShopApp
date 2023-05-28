@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-from order_item_dto import OrderItemDto
+from business.order_item_create_dto import OrderItemCreateDto
 
 
 @dataclass
-class OrderDto():
+class OrderCreateDto:
     city: str
     amount: float
     vat_amount: float
@@ -14,4 +14,4 @@ class OrderDto():
     created_on: datetime
     created_by: str
     customer_no: str
-    items: list[OrderItemDto]
+    items: list[OrderItemCreateDto]

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
-from entity.order_item_entity import OrderItemEntity
+from business.order_item_update_dto import OrderItemUpdateDto
 
 
 @dataclass
-class OrderEntity():
+class OrderUpdateDto:
     order_id: int
     city: str
     amount: float
@@ -15,4 +15,4 @@ class OrderEntity():
     created_on: datetime
     created_by: str
     customer_no: str
-    items: list[OrderItemEntity]
+    items: list[OrderItemUpdateDto]

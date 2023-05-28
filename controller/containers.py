@@ -1,9 +1,9 @@
 from dependency_injector import containers, providers
-from repo_connection import EngineConnection
-from good_service import GoodService
-from good_repository import GoodRepository
-from order_service import OrderService
-from order_repository import OrderRepository
+from controller.repo_connection import EngineConnection
+from business.good_service import GoodService
+from repository.good_repository import GoodRepository
+from business.order_service import OrderService
+from repository.order_repository import OrderRepository
 
 
 class Containers(containers.DeclarativeContainer):
@@ -18,4 +18,3 @@ class Containers(containers.DeclarativeContainer):
                                    engine_connection=engine_connection)
     order_service = providers.Factory(OrderService,
                                       order_repo=order_repo)
-

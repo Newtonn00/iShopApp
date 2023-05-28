@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class GoodEntity():
+class GoodUpdateDto():
     good_id: int
     name: str
     category: str

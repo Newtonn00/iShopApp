@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 
 @dataclass
-class GoodDto():
+class GoodCreateDto():
     name: str
     category: str
     availqty: int
-    status: int
+    status_code: str

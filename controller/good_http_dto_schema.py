@@ -5,4 +5,4 @@ class GoodHttpDtoSchema(Schema):
     name = fields.Str()
     category = fields.Str()
     availqty = fields.Integer()
-    status = fields.Integer()
+    status_code = fields.Str()

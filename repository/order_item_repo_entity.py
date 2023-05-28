@@ -4,7 +4,8 @@ from sqlalchemy import Integer, String
 
 Base = declarative_base()
 
-class OrderItem(Base):
+
+class OrderItemModel(Base):
     __tablename__ = 'order_item'
     order_id = sa.Column(Integer, sa.ForeignKey("order_header.order_id"),
                          primary_key=True)
