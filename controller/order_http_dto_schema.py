@@ -6,7 +6,7 @@ class OrderHttpDtoSchema(Schema):
 
     order_id = fields.Integer()
     city = fields.Str()
-    status = fields.Integer()
+    status_code = fields.String()
     amount = fields.Float()
     vat_amount = fields.Float()
     weight = fields.Integer()

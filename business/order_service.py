@@ -19,7 +19,11 @@ class OrderService:
         return order_entity
 
     def create(self, order_dto: OrderCreateDto) -> OrderEntity:
-        order_entity = OrderEntity(order_id=0,
+
+        orders_count = self._order_repo.get_order_count(order_dto.customer_no)
+        order_no = order_dto.customer_no + str(orders_count)
+        order_id = int(order_no)
+        order_entity = OrderEntity(order_id=order_id,
                                    city=order_dto.city,
                                    amount=order_dto.amount,
                                    vat_amount=order_dto.vat_amount,
@@ -28,7 +32,7 @@ class OrderService:
                                    customer_no=order_dto.customer_no,
                                    created_by=order_dto.created_by,
                                    created_on=order_dto.created_on,
-                                   status=order_dto.status,
+                                   status_code=order_dto.status_code,
                                    items=[])
         i = 0
         for item in order_dto.items:
@@ -54,7 +58,7 @@ class OrderService:
                                    customer_no=order_dto.customer_no,
                                    created_by=order_dto.created_by,
                                    created_on=order_dto.created_on,
-                                   status=order_dto.status,
+                                   status_code=order_dto.status_code,
                                    items=[])
         i = 0
         for item in order_dto.items:

@@ -2,14 +2,20 @@ from datetime import datetime
 from entity.order_entity import OrderEntity
 from entity.order_item_entity import OrderItemEntity
 from controller.repo_connection import EngineConnection
-from repository.order_repo_entity import OrderHeaderModel
-from repository.order_item_repo_entity import OrderItemModel
+from repository.order_repo_entity import OrderHeaderModel, OrderItemModel
+
 
 
 class OrderRepository:
 
     def __init__(self, engine_connection: EngineConnection):
         self._session = engine_connection.session
+
+    def get_order_count(self,customerno: str) -> int:
+        curr_session = self._session()
+        orders_count = curr_session.query(OrderHeaderModel).filter(OrderHeaderModel.customer_no==customerno).count()
+        curr_session.close()
+        return orders_count
 
     def _map_rep_dataclass(rep_data) -> OrderEntity:
         order_dataclass = OrderEntity(
@@ -19,7 +25,7 @@ class OrderRepository:
             vat_amount=rep_data.vat_amount,
             quantity=rep_data.quantity,
             weight=rep_data.weight,
-            status=rep_data.status,
+            status_code=rep_data.status_code.rstrip(),
             created_on=rep_data.created_on,
             created_by=rep_data.created_by,
             customer_no=rep_data.customer_no,
@@ -45,7 +51,7 @@ class OrderRepository:
 
         curr_session = self._session()
         order_data = curr_session.query(OrderHeaderModel).get(order_id)
-        order_data.status = 10
+        order_data.status_code = '10'
         curr_session.add(order_data)
         curr_session.commit()
         order_dataclass = OrderRepository._map_rep_dataclass(order_data)
@@ -58,12 +64,13 @@ class OrderRepository:
         items = order_entity.items
         order_rec = curr_session.query(OrderHeaderModel).get(order_entity.order_id)
         updated_header = OrderHeaderModel(
+                                     order_id=order_entity.order_id,
                                      amount=order_entity.amount,
                                      vat_amount=order_entity.vat_amount,
                                      quantity=order_entity.quantity,
                                      weight=order_entity.weight,
                                      city=order_rec.city,
-                                     status=order_rec.status,
+                                     status_code=order_entity.status_code,
                                      created_on=order_rec.created_on,
                                      created_by=order_rec.created_by,
                                      customer_no=order_rec.customer_no)
@@ -89,18 +96,18 @@ class OrderRepository:
         curr_session = self._session()
         items = order_entity.items
         created_header = OrderHeaderModel(
+            order_id=order_entity.order_id,
             amount=order_entity.amount, vat_amount=order_entity.vat_amount,
             quantity=order_entity.quantity, weight=order_entity.weight,
-            city=order_entity.city, status=1,
+            city=order_entity.city, status_code='01',
             created_on=datetime.now(), created_by=order_entity.created_by,
             customer_no=order_entity.customer_no)
 
         curr_session.add(created_header)
-        curr_session.commit()
         i = 0
         for item in items:
             created_item = OrderItemModel(
-                order_id=created_header.order_id, item_no=(i + 1) * 10,
+                order_id=order_entity.order_id, item_no=(i + 1) * 10,
                 good_id=item.good_id,
                 good_name=item.good_name, quantity=item.quantity)
             curr_session.add(created_item)

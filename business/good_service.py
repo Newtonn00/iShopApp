@@ -17,8 +17,10 @@ class GoodService:
 
     def create(self, good_dto: GoodCreateDto) -> GoodEntity:
 
+        last_good_id = self._good_repo.get_goods_count()
+
         good_entity = GoodEntity(
-            good_id=0,
+            good_id=last_good_id + 1,
             name=good_dto.name,
             category=good_dto.category,
             availqty=good_dto.availqty,

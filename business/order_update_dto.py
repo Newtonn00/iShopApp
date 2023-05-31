@@ -11,7 +11,7 @@ class OrderUpdateDto:
     vat_amount: float
     quantity: int
     weight: float
-    status: int
+    status_code: str
     created_on: datetime
     created_by: str
     customer_no: str

@@ -1,4 +1,5 @@
+py_log.py
+*/__pycache__/
+*venv/
+*/.idea/
 .DS_Store
-.idea/
-__pycache__/
-./controller/py_log.py

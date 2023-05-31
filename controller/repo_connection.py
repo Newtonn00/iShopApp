@@ -1,17 +1,16 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 import configparser
+from controller.settings_parser import SettingsParser
 
 class EngineConnection:
     def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('settings.ini')
-        host = config['db']['host']
-        user_name = config['db']['user_name']
-        db_name = config['db']['db_name']
-        password = config['db']['password']
+        connection_settings = SettingsParser()
         self._engine = sa.create_engine(
-        "postgresql+psycopg2://"+user_name+":"+password+"@"+host+"/"+db_name,
-        echo=True, pool_size=5)
+                       "postgresql+psycopg2://"+connection_settings.db_user_name+":"+
+                       connection_settings.db_password+"@"+connection_settings.db_host+"/"+
+                       connection_settings.db_name,
+                       echo=False, pool_size=5)
+
         self._engine.connect()
         self.session = sessionmaker(bind=self._engine)

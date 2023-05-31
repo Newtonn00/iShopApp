@@ -18,6 +18,13 @@ class GoodRepository:
 
         return good_dataclass
 
+    def get_goods_count(self) -> int:
+        goods_count: int
+        curr_session = self._session()
+        goods_count = curr_session.query(GoodItemModel).count()
+
+        return goods_count
+
     def read_one(self, good_id: int) -> GoodEntity:
         curr_session = self._session()
 

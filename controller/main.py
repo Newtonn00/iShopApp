@@ -12,4 +12,4 @@ api.init_app(app)
 if __name__ == "__main__":
     container = Containers()
 #    engine_connection = container.engine_connection()
-    app.run(debug=True, port=5000, host="0.0.0.0")
+    app.run(debug=False, port=5000, host="127.0.0.1")

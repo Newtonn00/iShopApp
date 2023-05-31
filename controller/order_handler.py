@@ -54,7 +54,7 @@ class OrderController(Resource):
                                    customer_no=validated_data["customer_no"],
                                    created_by=validated_data["created_by"],
                                    created_on=validated_data["created_on"],
-                                   status=validated_data["status"],
+                                   status_code=validated_data["status_code"],
                                    items=[])
         for i in range(len(validated_data["items"])):
             order_dto.items.insert(i, (OrderItemCreateDto(
@@ -89,7 +89,7 @@ class OrderController(Resource):
                                    customer_no=validated_data["customer_no"],
                                    created_by=validated_data["created_by"],
                                    created_on=validated_data["created_on"],
-                                   status=validated_data["status"],
+                                   status_code=validated_data["status_code"],
                                    items=[])
         for i in range(len(validated_data["items"])):
             order_dto.items.insert(i, (OrderItemUpdateDto(
