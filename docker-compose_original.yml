@@ -1,0 +1,41 @@
+version: "3.5"
+services:
+  server:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      network: default
+    ports:
+      - "5001:5000"
+    volumes:
+      - "./src:/var/app/ishop/src"
+    depends_on:
+      db:
+        condition: service_healthy
+    tty: true
+
+
+  db:
+    image: postgres:15-alpine3.18
+
+    environment:
+      POSTGRES_USER: "ishop_admin"
+      POSTGRES_PASSWORD: "Password78"
+      POSTGRES_DB: "ishop_db"
+
+#      POSTGRES_HOST_AUTH_METHOD: "trust"
+    ports:
+      - "5432:5432"
+    healthcheck:
+
+      test: [ "CMD", "pg_isready", "-q", "-d", "ishop_db", "-U", "ishop_admin" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    volumes:
+      - "./volumes/db:/var/lib/postgresql/data"
+      - "./psql_backup/ishop_db.sql:/docker-entrypoint-initdb.d/ishop_db.sql"
+
+networks:
+  default:
