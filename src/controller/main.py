@@ -11,4 +11,4 @@ api.add_resource(GoodController, "/api/good/<int:good_id>")
 api.init_app(app)
 if __name__ == "__main__":
     container = Containers()
-    app.run(debug=True, port=5000, host="0.0.0.0")
+    app.run(debug=False, port=5000, host="0.0.0.0")
