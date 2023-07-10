@@ -35,7 +35,7 @@ env:
   ECR_REPOSITORY: ishop2ver           # set this to your Amazon ECR repository name
   ECS_SERVICE: ishop2ver_ARM                 # set this to your Amazon ECS service name
   ECS_CLUSTER: EC2_Cluster                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: ishop2ver_ARM # set this to the path to your Amazon ECS task definition
+  ECS_TASK_DEFINITION: ./ishop2ver_ARM.json # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: ishop2ver_ARM           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
