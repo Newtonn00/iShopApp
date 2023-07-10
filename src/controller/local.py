@@ -2,7 +2,7 @@ import requests
 
 
 
-res = requests.get("http://localhost:5001/api/order/12")
+res = requests.get("http://16.16.251.222:5000/api/order/12")
 print(res.json())
 # res = requests.get("http://127.0.0.1:5000/api/good/36")
 # print(res.json())
