@@ -1,5 +1,5 @@
 py_log.py
-*/__pycache__/
+*__pycache__/
 *venv/
 */.idea/
 */psql_backup/
