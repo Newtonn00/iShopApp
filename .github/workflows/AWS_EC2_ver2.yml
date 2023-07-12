@@ -26,9 +26,9 @@ jobs:
       - uses: actions/checkout@v2 
       - name: Deploy in EC2
         env:
-            PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY  }}
-            HOSTNAME : ${{ secrets.HOSTNAME  }}
-            USER_NAME : ${{ secrets.USER_NAME  }}
+            PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY  }}
+            HOSTNAME : "16.171.64.215"
+            USER_NAME : "root"
             
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
