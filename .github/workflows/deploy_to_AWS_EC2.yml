@@ -19,5 +19,5 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           SOURCE: "./"
           REMOTE_HOST: "16.171.64.215"
-          REMOTE_USER: "ishop_admin"
+          REMOTE_USER: "root"
           TARGET: "/home/ishop_admin/projects/ishop"
