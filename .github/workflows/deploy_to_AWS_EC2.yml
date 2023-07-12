@@ -20,4 +20,4 @@ jobs:
           SOURCE: "./"
           REMOTE_HOST: "16.171.64.215"
           REMOTE_USER: "ishop_admin"
-          TARGET: "/home/ec2-user/SampleExpressApp"
+          TARGET: "/home/ishop_admin/projects/ishop"
