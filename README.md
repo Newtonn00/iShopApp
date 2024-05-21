@@ -16,6 +16,7 @@ This service was created during the study of technology and practice
 
 - Python
 - Flask
+- Marshmellow
 - PostgreSQL
 - Docker
 
