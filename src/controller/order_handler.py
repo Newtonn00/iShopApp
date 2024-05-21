@@ -25,8 +25,10 @@ class OrderController(Resource):
             logging.error(str(err), exc_info=True)
             return {"Error": "internal server error"}, 500
         order_schema = OrderHttpDtoSchema()
-        order_json = order_schema.dump(obj=order_data)
-        return order_json, 200
+        order_list = []
+        for order_dict in order_data:
+            order_list.append(order_schema.dump(obj=order_dict))
+        return order_list, 200
 
     def delete(self, order_id: int):
         try:

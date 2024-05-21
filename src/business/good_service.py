@@ -1,14 +1,20 @@
+from typing import List
+
 from src.repository.good_repository import GoodRepository
 from src.entity.good_entity import GoodEntity
 from src.business.good_update_dto import GoodUpdateDto
 from src.business.good_create_dto import GoodCreateDto
 
+
 class GoodService:
     def __init__(self, good_repo: GoodRepository):
         self._good_repo = good_repo
 
-    def get(self, good_id: int) -> GoodEntity:
-        good_entity = self._good_repo.read_one(good_id)
+    def get(self, good_id: int) -> List[GoodEntity]:
+        if good_id == 0:
+            good_entity = self._good_repo.read_all()
+        else:
+            good_entity = self._good_repo.read_one(good_id)
         return good_entity
 
     def delete(self, good_id: int) -> GoodEntity:
@@ -16,7 +22,6 @@ class GoodService:
         return good_entity
 
     def create(self, good_dto: GoodCreateDto) -> GoodEntity:
-
         last_good_id = self._good_repo.get_goods_count()
 
         good_entity = GoodEntity(

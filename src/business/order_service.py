@@ -1,3 +1,5 @@
+from typing import List
+
 from src.repository.order_repository import OrderRepository
 from src.entity.order_entity import OrderEntity
 from src.entity.order_item_entity import OrderItemEntity
@@ -10,8 +12,11 @@ class OrderService:
     def __init__(self, order_repo: OrderRepository):
         self._order_repo = order_repo
 
-    def get(self, order_id: int) -> OrderEntity:
-        order_entity = self._order_repo.read_one(order_id)
+    def get(self, order_id: int) -> List[OrderEntity]:
+        if order_id == 0:
+            order_entity = self._order_repo.read_all()
+        else:
+            order_entity = self._order_repo.read_one(order_id)
         return order_entity
 
     def delete(self, order_id: int) -> OrderEntity:

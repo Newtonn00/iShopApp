@@ -1,9 +1,8 @@
 from marshmallow import Schema, fields
 from order_item_http_dto_schema import OrderItemHttpDtoSchema
 
+
 class OrderHttpDtoSchema(Schema):
-
-
     order_id = fields.Integer()
     city = fields.Str()
     status_code = fields.String()

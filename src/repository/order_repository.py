@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import List
+
 from src.entity.order_entity import OrderEntity
 from src.entity.order_item_entity import OrderItemEntity
 from repo_connection import EngineConnection
@@ -39,13 +41,24 @@ class OrderRepository:
                 quantity=rep_data.items[i].quantity)))
         return order_dataclass
 
-    def read_one(self, order_id: int) -> OrderEntity:
+    def read_one(self, order_id: int) -> List[OrderEntity]:
 
         curr_session = self._session()
         data = curr_session.query(OrderHeaderModel).get(order_id)
         order_dataclass = OrderRepository._map_rep_dataclass(data)
         curr_session.close()
-        return order_dataclass
+        return [order_dataclass]
+
+    def read_all(self) -> List[OrderEntity]:
+
+        curr_session = self._session()
+        data = curr_session.query(OrderHeaderModel).all()
+        order_list = []
+        for order in data:
+            order_dataclass = OrderRepository._map_rep_dataclass(order)
+            order_list.append(order_dataclass)
+        curr_session.close()
+        return order_list
 
     def delete_one(self, order_id: int) -> OrderEntity:
 

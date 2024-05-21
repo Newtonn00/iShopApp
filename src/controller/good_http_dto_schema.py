@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 
+
 class GoodHttpDtoSchema(Schema):
     good_id = fields.Integer()
     name = fields.Str()

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 from marshmallow import ValidationError
 from good_http_dto_schema import GoodHttpDtoSchema
@@ -11,7 +11,6 @@ containers = Containers()
 good_srv = containers.good_service()
 logging.basicConfig(filename="py_log.py", filemode="w", level=logging.INFO)
 
-
 class GoodController(Resource):
 
     def get(self, good_id: int):
@@ -21,8 +20,12 @@ class GoodController(Resource):
             logging.error(str(err), exc_info=True)
             return {"Error": "internal server error"}, 500
         good_schema = GoodHttpDtoSchema()
-        good_json = good_schema.dump(obj=good_data)
-        return good_json, 200
+        # good_json = good_schema.dump(obj=good_data)
+        good_list = []
+        for good_dict in good_data:
+            good_list.append(good_schema.dump(obj=good_dict))
+
+        return good_list, 200
 
     def delete(self, good_id: int):
         try:

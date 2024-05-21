@@ -1,3 +1,5 @@
+from typing import List
+
 from src.entity.good_entity import GoodEntity
 from repo_connection import EngineConnection
 from src.repository.good_repo_entity import GoodItemModel
@@ -25,16 +27,28 @@ class GoodRepository:
 
         return goods_count
 
-    def read_one(self, good_id: int) -> GoodEntity:
+    def read_one(self, good_id: int) -> List[GoodEntity]:
         curr_session = self._session()
 
         data = curr_session.query(GoodItemModel).get(good_id)
         good_dataclass2 = GoodRepository._map_rep_dataclass(data)
         curr_session.close()
-        return good_dataclass2
+        good_list = [good_dataclass2]
+        return good_list
+
+    def read_all(self) -> List[GoodEntity]:
+        curr_session = self._session()
+
+        data = curr_session.query(GoodItemModel).all()
+        good_list = []
+        for good_dict in data:
+
+            good_dataclass2 = GoodRepository._map_rep_dataclass(good_dict)
+            good_list.append(good_dataclass2)
+        curr_session.close()
+        return good_list
 
     def delete_one(self, good_id: int) -> GoodEntity:
-
         curr_session = self._session()
         orig_data = curr_session.query(GoodItemModel).get(good_id)
         orig_data.status_code = '10'

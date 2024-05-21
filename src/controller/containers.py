@@ -7,7 +7,6 @@ from src.repository.order_repository import OrderRepository
 
 
 class Containers(containers.DeclarativeContainer):
-
     engine_connection = providers.Singleton(EngineConnection)
     good_repo = providers.Factory(GoodRepository,
                                   engine_connection=engine_connection)
